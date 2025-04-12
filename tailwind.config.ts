@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,6 +19,9 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Poppins', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -61,6 +65,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Bookarang custom colors
+				bookarang: {
+					mint: '#BDEBD7',
+					sky: '#D0E8F2',
+					beige: '#F8F0E3',
+					coral: '#FF9A8B',
+					purple: '#A28AE9',
 				}
 			},
 			borderRadius: {
@@ -84,11 +96,26 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'scale-up': {
+					'0%': { transform: 'scale(1)' },
+					'100%': { transform: 'scale(1.05)' }
+				},
+				'slide-in': {
+					'0%': { transform: 'translateX(-10px)', opacity: '0' },
+					'100%': { transform: 'translateX(0)', opacity: '1' }
+				},
+				'fade-in': {
+					'0%': { opacity: '0' },
+					'100%': { opacity: '1' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'scale-up': 'scale-up 0.3s ease-in-out',
+				'slide-in': 'slide-in 0.3s ease-in-out',
+				'fade-in': 'fade-in 0.3s ease-in-out'
 			}
 		}
 	},
