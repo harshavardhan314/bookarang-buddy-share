@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { BookOpen, Mail, Lock, LogIn } from 'lucide-react';
@@ -11,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -22,6 +22,7 @@ type LoginValues = z.infer<typeof loginSchema>;
 const Login = () => {
   const { signIn, user, isLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -35,6 +36,10 @@ const Login = () => {
     setIsSubmitting(true);
     try {
       await signIn(values.email, values.password);
+      // Success toast will be handled by the auth state change in AuthContext
+    } catch (error: any) {
+      // Error toast will be handled by the auth context
+      console.error("Login error:", error);
     } finally {
       setIsSubmitting(false);
     }
