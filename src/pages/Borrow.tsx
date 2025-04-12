@@ -54,7 +54,7 @@ const MOCK_BOOKS = [
     distance: 0.8,
     rating: 4.7,
     lenderName: "Priya Patel",
-    description: "From a renowned historian comes a groundbreaking narrative of humanity's creation and evolution—a #1 international bestseller—that explores the ways in which biology and history have defined us and enhanced our understanding of what it means to be "human.""
+    description: "From a renowned historian comes a groundbreaking narrative of humanity's creation and evolution—a #1 international bestseller—that explores the ways in which biology and history have defined us and enhanced our understanding of what it means to be \"human.\"",
   },
   {
     id: 3,
