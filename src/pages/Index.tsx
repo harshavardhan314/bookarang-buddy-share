@@ -1,11 +1,12 @@
 
-import { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
+  // Use React.useEffect instead of useEffect directly
+  React.useEffect(() => {
     navigate('/');
   }, [navigate]);
 
