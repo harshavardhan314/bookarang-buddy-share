@@ -1,73 +1,42 @@
-# Welcome to your Lovable project
+Bookarang – A Community-Driven Book Lending Platform
+Bookarang is an innovative web-based platform designed to make book access more affordable and sustainable by enabling peer-to-peer book lending within local communities. Aimed especially at students and avid readers, Bookarang connects users who own idle books with those looking to borrow them temporarily at a minimal cost.
 
-## Project info
+The platform allows users to list books they own by providing details such as condition, location, and original price. Borrowers can search for books nearby and request to borrow them for a selected duration. The borrowing process involves a fully refundable deposit, with a small service fee based on the book’s condition, duration, and market value. Lenders earn a portion of this fee, incentivizing participation and promoting circular usage of books.
 
-**URL**: https://lovable.dev/projects/b24f510d-b2a6-49cd-a03f-2343432b8d95
+Bookarang emphasizes local lending to avoid logistics costs by encouraging direct meetups between users in the same city or locality. The platform features Google OAuth for login, location-based search via Google Maps API, ISBN autofill using Open Library/Google Books API, and storage/notifications through Supabase. Users also receive in-site reminders, and the system includes a rating mechanism to ensure reliability and accountability among borrowers.
 
-## How can I edit this code?
+Key Features:
 
-There are several ways of editing your application.
+Book lending and borrowing within a city radius
 
-**Use Lovable**
+Transparent fee and deposit structure
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b24f510d-b2a6-49cd-a03f-2343432b8d95) and start prompting.
+In-site notifications and due date reminders
 
-Changes made via Lovable will be committed automatically to this repo.
+Condition-based pricing model
 
-**Use your preferred IDE**
+Real-time book availability and smart search
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+ISBN-based auto-fill of book data
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Community safety via ratings and penalties
 
-Follow these steps:
+Merits:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Promotes affordable learning and reading
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Encourages sustainability through reuse
 
-# Step 3: Install the necessary dependencies.
-npm i
+Provides a passive earning method for book owners
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+Ideal for college students, especially during exam seasons
 
-**Edit a file directly in GitHub**
+Drawbacks:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Limited to local lending; cross-city delivery not supported
 
-**Use GitHub Codespaces**
+Manual meetups may require coordination effort
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Risk of damaged or unreturned books, mitigated via deposits and ratings
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/b24f510d-b2a6-49cd-a03f-2343432b8d95) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes it is!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Bookarang transforms idle personal bookshelves into a shared community resource while promoting literacy, affordability, and sustainable usage — all through a decentralized, user-first digital experience.
