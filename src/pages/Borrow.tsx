@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Star, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,6 +29,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
+interface ProfileData {
+  first_name: string | null;
+  last_name: string | null;
+  city: string | null;
+}
+
 interface BookData {
   id: string;
   title: string;
@@ -41,11 +46,7 @@ interface BookData {
   description: string | null;
   owner_id: string;
   is_available: boolean;
-  owner_profile?: {
-    first_name: string;
-    last_name: string;
-    city: string;
-  } | null;
+  owner_profile?: ProfileData | null;
   distance?: number;
   rating?: number;
   lenderName?: string;
@@ -72,17 +73,10 @@ const Borrow = () => {
     try {
       setIsLoading(true);
       
-      // Fetch books with owner profiles
+      // Fetch books
       const { data, error } = await supabase
         .from('books')
-        .select(`
-          *,
-          owner_profile:profiles!owner_id(
-            first_name,
-            last_name,
-            city
-          )
-        `)
+        .select('*')
         .eq('is_available', true);
         
       if (error) {
@@ -90,16 +84,32 @@ const Borrow = () => {
       }
       
       if (data) {
-        // Transform data to match our expected format
-        const booksWithDetails: BookData[] = data.map(book => ({
-          ...book,
-          // Add mock data for demo purposes
-          distance: parseFloat((Math.random() * 5).toFixed(1)),
-          rating: parseFloat((4 + Math.random()).toFixed(1)),
-          lenderName: book.owner_profile ? 
-            `${book.owner_profile.first_name || ''} ${book.owner_profile.last_name || ''}`.trim() : 
-            'Unknown User'
-        }));
+        // Get user profiles for each book owner
+        const booksWithDetails: BookData[] = await Promise.all(
+          data.map(async (book) => {
+            // Fetch owner profile
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('first_name, last_name, city')
+              .eq('id', book.owner_id)
+              .single();
+            
+            if (profileError) {
+              console.error('Error fetching profile:', profileError);
+            }
+            
+            // Add mock data for demo purposes and owner details
+            return {
+              ...book,
+              owner_profile: profileData || null,
+              distance: parseFloat((Math.random() * 5).toFixed(1)),
+              rating: parseFloat((4 + Math.random()).toFixed(1)),
+              lenderName: profileData ? 
+                `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() : 
+                'Unknown User'
+            };
+          })
+        );
         
         setBooks(booksWithDetails);
       }
@@ -357,7 +367,11 @@ const Borrow = () => {
           </p>
         </div>
         
-        {filteredBooks.length > 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : filteredBooks.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredBooks.map((book) => (
               <Dialog key={book.id}>
@@ -365,7 +379,7 @@ const Borrow = () => {
                   <Card className="overflow-hidden cursor-pointer card-hover" onClick={() => setSelectedBook(book)}>
                     <div className="aspect-[3/4] relative">
                       <img 
-                        src={book.cover}
+                        src={book.cover_image || '/placeholder.svg'}
                         alt={book.title} 
                         className="object-cover w-full h-full"
                       />
@@ -409,7 +423,7 @@ const Borrow = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
                     <div className="aspect-[3/4] relative">
                       <img 
-                        src={book.cover}
+                        src={book.cover_image || '/placeholder.svg'}
                         alt={book.title} 
                         className="object-cover w-full h-full rounded-md"
                       />
@@ -438,7 +452,7 @@ const Borrow = () => {
                         <p className="text-sm text-muted-foreground mb-1">Lender</p>
                         <div className="flex items-center">
                           <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center mr-2">
-                            {book.lenderName[0]}
+                            {book.lenderName?.[0] || '?'}
                           </div>
                           <div>
                             <p className="text-sm font-medium">{book.lenderName}</p>
@@ -452,7 +466,7 @@ const Borrow = () => {
                       
                       <div className="pt-2">
                         <p className="text-sm text-muted-foreground mb-1">Location</p>
-                        <p className="text-sm">{book.distance} km away in Mumbai</p>
+                        <p className="text-sm">{book.distance} km away in {book.owner_profile?.city || 'Mumbai'}</p>
                       </div>
                       
                       <div className="pt-2">
