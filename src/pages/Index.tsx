@@ -1,16 +1,11 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 const Index = () => {
-  const navigate = useNavigate();
-
-  // Use React.useEffect instead of useEffect directly
-  React.useEffect(() => {
-    navigate('/');
-  }, [navigate]);
-
-  return null;
+  // Instead of using useNavigate hook and useEffect,
+  // we'll use the Navigate component directly
+  return <Navigate to="/" replace />;
 };
 
 export default Index;

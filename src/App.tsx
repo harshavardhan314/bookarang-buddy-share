@@ -23,8 +23,8 @@ const App = () => (
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <TooltipProvider>
+        <TooltipProvider>
+          <AuthProvider>
             <Toaster />
             <Sonner />
             <Routes>
@@ -41,8 +41,8 @@ const App = () => (
               
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </TooltipProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </TooltipProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </React.StrictMode>
