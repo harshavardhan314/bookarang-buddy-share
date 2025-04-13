@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { BookPlus, Camera, Info, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,9 +16,13 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { v4 as uuidv4 } from 'uuid';
 
 const Lend = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [title, setTitle] = useState('');
@@ -31,6 +34,8 @@ const Lend = () => {
   const [feePerDay, setFeePerDay] = useState<number>(15);
   const [deposit, setDeposit] = useState<number>(150);
   const [bookAvailable, setBookAvailable] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   
   // Calculated based on formula: max(₹5, 0.5% × Price)
   React.useEffect(() => {
@@ -43,25 +48,33 @@ const Lend = () => {
     const file = e.target.files?.[0];
     if (file) {
       setIsUploading(true);
+      setImageFile(file);
       
-      // Simulate upload delay
-      setTimeout(() => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPreviewImage(reader.result as string);
-          setIsUploading(false);
-        };
-        reader.readAsDataURL(file);
-      }, 1500);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
     }
   };
   
   const handleRemoveImage = () => {
     setPreviewImage(null);
+    setImageFile(null);
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "You must be logged in to lend a book.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Validate the form
     if (!title || !author || !condition || !originalPrice) {
@@ -73,20 +86,75 @@ const Lend = () => {
       return;
     }
     
-    // Submit the form
-    toast({
-      title: "Book listed successfully!",
-      description: `Your book "${title}" has been listed for lending.`,
-    });
+    setIsSubmitting(true);
     
-    // Reset the form
-    setTitle('');
-    setAuthor('');
-    setIsbn('');
-    setCondition('');
-    setDescription('');
-    setOriginalPrice(299);
-    setPreviewImage(null);
+    try {
+      let coverImagePath = null;
+      
+      // Upload image if exists
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const filePath = `${user.id}/${uuidv4()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('book_covers')
+          .upload(filePath, imageFile);
+          
+        if (uploadError) {
+          throw uploadError;
+        }
+        
+        const { data } = supabase.storage
+          .from('book_covers')
+          .getPublicUrl(filePath);
+          
+        coverImagePath = data.publicUrl;
+      }
+      
+      // Insert book data
+      const { error: insertError } = await supabase
+        .from('books')
+        .insert({
+          title,
+          author,
+          description,
+          condition,
+          fee: feePerDay,
+          deposit,
+          is_available: bookAvailable,
+          owner_id: user.id,
+          cover_image: coverImagePath
+        });
+        
+      if (insertError) {
+        throw insertError;
+      }
+      
+      toast({
+        title: "Book listed successfully!",
+        description: `Your book "${title}" has been listed for lending.`,
+      });
+      
+      // Reset the form
+      setTitle('');
+      setAuthor('');
+      setIsbn('');
+      setCondition('');
+      setDescription('');
+      setOriginalPrice(299);
+      setPreviewImage(null);
+      setImageFile(null);
+      
+    } catch (error: any) {
+      console.error('Error listing book:', error);
+      toast({
+        title: "Error listing book",
+        description: error.message || "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   return (

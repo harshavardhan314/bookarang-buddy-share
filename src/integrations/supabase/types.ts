@@ -9,6 +9,101 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      books: {
+        Row: {
+          author: string
+          condition: string
+          cover_image: string | null
+          created_at: string
+          deposit: number
+          description: string | null
+          fee: number
+          id: string
+          is_available: boolean | null
+          owner_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author: string
+          condition: string
+          cover_image?: string | null
+          created_at?: string
+          deposit: number
+          description?: string | null
+          fee: number
+          id?: string
+          is_available?: boolean | null
+          owner_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          condition?: string
+          cover_image?: string | null
+          created_at?: string
+          deposit?: number
+          description?: string | null
+          fee?: number
+          id?: string
+          is_available?: boolean | null
+          owner_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      borrowings: {
+        Row: {
+          book_id: string
+          borrow_date: string
+          borrower_id: string
+          created_at: string
+          due_date: string
+          id: string
+          lender_id: string
+          return_date: string | null
+          status: string
+          total_paid: number
+          updated_at: string
+        }
+        Insert: {
+          book_id: string
+          borrow_date?: string
+          borrower_id: string
+          created_at?: string
+          due_date: string
+          id?: string
+          lender_id: string
+          return_date?: string | null
+          status?: string
+          total_paid: number
+          updated_at?: string
+        }
+        Update: {
+          book_id?: string
+          borrow_date?: string
+          borrower_id?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          lender_id?: string
+          return_date?: string | null
+          status?: string
+          total_paid?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "borrowings_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           city: string | null
@@ -36,12 +131,69 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          book_id: string
+          borrowing_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          reviewee_id: string
+          reviewer_id: string
+          updated_at: string
+        }
+        Insert: {
+          book_id: string
+          borrowing_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          reviewee_id: string
+          reviewer_id: string
+          updated_at?: string
+        }
+        Update: {
+          book_id?: string
+          borrowing_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          reviewee_id?: string
+          reviewer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_borrowing_id_fkey"
+            columns: ["borrowing_id"]
+            isOneToOne: false
+            referencedRelation: "borrowings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_rating: {
+        Args: { user_id: string }
+        Returns: {
+          average_rating: number
+          total_ratings: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

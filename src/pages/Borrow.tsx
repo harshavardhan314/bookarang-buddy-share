@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Search, Filter, Star, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Filter, Star, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -27,126 +27,95 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
-// Mock data for book listings
-const MOCK_BOOKS = [
-  {
-    id: 1,
-    title: "Atomic Habits",
-    author: "James Clear",
-    cover: "https://source.unsplash.com/random/300x400?book,1",
-    condition: "Excellent",
-    fee: 12,
-    deposit: 250,
-    distance: 1.5,
-    rating: 4.9,
-    lenderName: "Rahul Sharma",
-    description: "An easy and proven way to build good habits and break bad ones. In this book, Clear reveals practical strategies that will teach you how to form good habits, break bad ones, and master small behaviors that lead to remarkable results."
-  },
-  {
-    id: 2,
-    title: "Sapiens: A Brief History of Humankind",
-    author: "Yuval Noah Harari",
-    cover: "https://source.unsplash.com/random/300x400?book,2",
-    condition: "Good",
-    fee: 15,
-    deposit: 300,
-    distance: 0.8,
-    rating: 4.7,
-    lenderName: "Priya Patel",
-    description: "From a renowned historian comes a groundbreaking narrative of humanity's creation and evolution—a #1 international bestseller—that explores the ways in which biology and history have defined us and enhanced our understanding of what it means to be \"human.\"",
-  },
-  {
-    id: 3,
-    title: "The Alchemist",
-    author: "Paulo Coelho",
-    cover: "https://source.unsplash.com/random/300x400?book,3",
-    condition: "Good",
-    fee: 8,
-    deposit: 180,
-    distance: 2.2,
-    rating: 4.8,
-    lenderName: "Aman Gupta",
-    description: "Paulo Coelho's masterpiece tells the mystical story of Santiago, an Andalusian shepherd boy who yearns to travel in search of a worldly treasure. His quest will lead him to riches far different—and far more satisfying—than he ever imagined."
-  },
-  {
-    id: 4,
-    title: "Rich Dad Poor Dad",
-    author: "Robert T. Kiyosaki",
-    cover: "https://source.unsplash.com/random/300x400?book,4",
-    condition: "Excellent",
-    fee: 10,
-    deposit: 200,
-    distance: 1.2,
-    rating: 4.6,
-    lenderName: "Neha Singh",
-    description: "The #1 personal finance book of all time that tells the story of a young man and his two dads (his real father and the father of his best friend, his rich dad), and the ways in which both men shaped his thoughts about money and investing."
-  },
-  {
-    id: 5,
-    title: "Thinking, Fast and Slow",
-    author: "Daniel Kahneman",
-    cover: "https://source.unsplash.com/random/300x400?book,5",
-    condition: "Okay",
-    fee: 12,
-    deposit: 220,
-    distance: 3.1,
-    rating: 4.7,
-    lenderName: "Vivek Kumar",
-    description: "In this book, Kahneman takes us on a groundbreaking tour of the mind and explains the two systems that drive the way we think. System 1 is fast, intuitive, and emotional; System 2 is slower, more deliberative, and more logical."
-  },
-  {
-    id: 6,
-    title: "Zero to One",
-    author: "Peter Thiel",
-    cover: "https://source.unsplash.com/random/300x400?book,6",
-    condition: "Good",
-    fee: 14,
-    deposit: 250,
-    distance: 1.7,
-    rating: 4.8,
-    lenderName: "Arjun Mehta",
-    description: "If you want to build a better future, you must believe in secrets. The great secret of our time is that there are still uncharted frontiers to explore and new inventions to create. Learn how to build companies that create new things."
-  },
-  {
-    id: 7,
-    title: "Educated",
-    author: "Tara Westover",
-    cover: "https://source.unsplash.com/random/300x400?book,7",
-    condition: "Excellent",
-    fee: 12,
-    deposit: 240,
-    distance: 2.5,
-    rating: 4.9,
-    lenderName: "Kavita Sharma",
-    description: "An unforgettable memoir about a young woman who, kept out of school, leaves her survivalist family and goes on to earn a PhD from Cambridge University. A universal coming-of-age story that gets to the heart of what an education is and what it offers."
-  },
-  {
-    id: 8,
-    title: "The Psychology of Money",
-    author: "Morgan Housel",
-    cover: "https://source.unsplash.com/random/300x400?book,8",
-    condition: "Excellent",
-    fee: 10,
-    deposit: 200,
-    distance: 0.9,
-    rating: 4.8,
-    lenderName: "Rohan Kapoor",
-    description: "Timeless lessons on wealth, greed, and happiness. Money—investing, personal finance, and business decisions—is typically taught as a math-based field. But in the real world, people don't make financial decisions on a spreadsheet."
-  }
-];
+interface BookData {
+  id: string;
+  title: string;
+  author: string;
+  cover_image: string | null;
+  condition: string;
+  fee: number;
+  deposit: number;
+  description: string | null;
+  owner_id: string;
+  is_available: boolean;
+  owner_profile?: {
+    first_name: string;
+    last_name: string;
+    city: string;
+  } | null;
+  distance?: number;
+  rating?: number;
+  lenderName?: string;
+}
 
 const Borrow = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCondition, setSelectedCondition] = useState<string | undefined>();
   const [maxFee, setMaxFee] = useState<number>(20);
   const [dayRange, setDayRange] = useState<string>("7");
   const [selectedLocation, setSelectedLocation] = useState<string | undefined>();
-  const [selectedBook, setSelectedBook] = useState<typeof MOCK_BOOKS[0] | null>(null);
+  const [selectedBook, setSelectedBook] = useState<BookData | null>(null);
   const [borrowDuration, setBorrowDuration] = useState("7");
+  const [books, setBooks] = useState<BookData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const filteredBooks = MOCK_BOOKS.filter(book => {
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+  
+  const fetchBooks = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch books with owner profiles
+      const { data, error } = await supabase
+        .from('books')
+        .select(`
+          *,
+          owner_profile:profiles!owner_id(
+            first_name,
+            last_name,
+            city
+          )
+        `)
+        .eq('is_available', true);
+        
+      if (error) {
+        throw error;
+      }
+      
+      if (data) {
+        // Transform data to match our expected format
+        const booksWithDetails: BookData[] = data.map(book => ({
+          ...book,
+          // Add mock data for demo purposes
+          distance: parseFloat((Math.random() * 5).toFixed(1)),
+          rating: parseFloat((4 + Math.random()).toFixed(1)),
+          lenderName: book.owner_profile ? 
+            `${book.owner_profile.first_name || ''} ${book.owner_profile.last_name || ''}`.trim() : 
+            'Unknown User'
+        }));
+        
+        setBooks(booksWithDetails);
+      }
+    } catch (error: any) {
+      console.error('Error fetching books:', error);
+      toast({
+        title: "Error loading books",
+        description: error.message || "Failed to load available books.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const filteredBooks = books.filter(book => {
     // Apply search filter
     if (searchQuery && !book.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
         !book.author.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -163,14 +132,52 @@ const Borrow = () => {
       return false;
     }
     
+    // Apply location filter if implemented
+    if (selectedLocation && book.owner_profile?.city !== selectedLocation) {
+      return false;
+    }
+    
     return true;
   });
   
-  const handleBorrowRequest = () => {
-    toast({
-      title: "Borrow request sent!",
-      description: `You have requested to borrow ${selectedBook?.title} for ${borrowDuration} days.`,
-    });
+  const handleBorrowRequest = async () => {
+    if (!user || !selectedBook) return;
+    
+    try {
+      // Calculate total fee based on duration
+      const totalFee = selectedBook.fee * parseInt(borrowDuration);
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + parseInt(borrowDuration));
+      
+      // Create borrowing record
+      const { error } = await supabase
+        .from('borrowings')
+        .insert({
+          book_id: selectedBook.id,
+          borrower_id: user.id,
+          lender_id: selectedBook.owner_id,
+          due_date: dueDate.toISOString(),
+          total_paid: totalFee + selectedBook.deposit
+        });
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Borrow request sent!",
+        description: `You have requested to borrow ${selectedBook.title} for ${borrowDuration} days.`,
+      });
+      
+      // Refresh books list
+      fetchBooks();
+      
+    } catch (error: any) {
+      console.error('Error requesting book:', error);
+      toast({
+        title: "Request failed",
+        description: error.message || "Failed to send borrow request.",
+        variant: "destructive",
+      });
+    }
   };
   
   const calculateTotalFee = () => {
