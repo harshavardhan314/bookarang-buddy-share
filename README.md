@@ -35,7 +35,7 @@ Drawbacks:
 
 Limited to local lending; cross-city delivery not supported
 
-Manual meetups may require coordination effort
+Manual meetups may require coordination effort.
 
 Risk of damaged or unreturned books, mitigated via deposits and ratings
 
